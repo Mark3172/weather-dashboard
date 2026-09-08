@@ -939,15 +939,36 @@
             showLoading(true);
             try {
                 const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(query)}&appid=${API_KEY}&units=${currentUnit}`;
+                console.log('[Weather] Fetching:', url.replace(API_KEY, '***'));
+                
                 const res = await fetch(url);
+                const data = await res.json().catch(() => ({}));
+                console.log('[Weather] Response status:', res.status, data);
+
                 if (!res.ok) {
-                    const err = await res.json().catch(() => ({}));
-                    throw new Error(err.message || `HTTP ${res.status}`);
+                    // Provide user-friendly error messages
+                    if (res.status === 401) {
+                        showError('Invalid or inactive API key. New keys can take up to 2 hours to activate. Please check your key and try again.');
+                        return;
+                    } else if (res.status === 404) {
+                        showError(`City "${query}" not found. Please check the spelling and try again.`);
+                        return;
+                    } else if (res.status === 429) {
+                        showError('API rate limit exceeded. Free tier allows 60 calls/minute. Please wait a moment and try again.');
+                        return;
+                    } else {
+                        throw new Error(data.message || `API error (HTTP ${res.status})`);
+                    }
                 }
-                const data = await res.json();
+
                 renderWeather(data);
             } catch (err) {
-                showError(err.message || 'Failed to fetch weather data');
+                console.error('[Weather] Error:', err);
+                if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
+                    showError('Network error. Please check your internet connection and try again.');
+                } else {
+                    showError(err.message || 'Failed to fetch weather data. Please try again.');
+                }
             } finally {
                 showLoading(false);
             }
@@ -1089,10 +1110,12 @@
         }
 
         function showError(msg) {
+            showLoading(false);
             const toast = document.getElementById('errorToast');
             toast.textContent = `⚠️ ${msg}`;
             toast.style.display = 'block';
-            setTimeout(() => { toast.style.display = 'none'; }, 4000);
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => { toast.style.display = 'none'; }, 8000);
         }
     </script>
 </body>

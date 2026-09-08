@@ -717,50 +717,217 @@
         }
 
         /* ═══════════════════════════════════════════
-           SUN CARD
+           SUN CARD — REDESIGNED
            ═══════════════════════════════════════════ */
         .sun-card {
-            padding: 1.5rem 2rem;
+            padding: 0;
             margin-bottom: 1.5rem;
+            overflow: hidden;
         }
-        .sun-card h3 {
+        .sun-card-header {
+            padding: 1.25rem 2rem 0;
             font-size: 0.75rem;
             font-weight: 600;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.08em;
-            margin-bottom: 1.5rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
-        .sun-times {
+
+        /* Sky scene */
+        .sun-scene {
+            position: relative;
+            width: 100%;
+            height: 180px;
+            overflow: hidden;
+        }
+        .sky {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg,
+                rgba(15, 23, 42, 0.6) 0%,
+                rgba(30, 58, 138, 0.3) 30%,
+                rgba(251, 146, 60, 0.15) 65%,
+                rgba(251, 191, 36, 0.2) 85%,
+                rgba(251, 146, 60, 0.1) 100%
+            );
+        }
+        .horizon {
+            position: absolute;
+            bottom: 0;
+            left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent 5%, rgba(251, 191, 36, 0.3) 20%, rgba(251, 191, 36, 0.5) 50%, rgba(251, 191, 36, 0.3) 80%, transparent 95%);
+        }
+        .horizon-glow {
+            position: absolute;
+            bottom: 0;
+            left: 0; right: 0;
+            height: 40px;
+            background: linear-gradient(180deg, transparent, rgba(251, 146, 60, 0.06));
+        }
+
+        /* Sun element */
+        .sun-orb-container {
+            position: absolute;
+            transition: all 2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .sun-orb {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 40% 40%, #fef3c7, #fbbf24, #f59e0b);
+            box-shadow:
+                0 0 20px rgba(251, 191, 36, 0.6),
+                0 0 50px rgba(251, 191, 36, 0.3),
+                0 0 80px rgba(251, 146, 60, 0.15);
+            position: relative;
+            animation: sunPulse 3s ease-in-out infinite;
+        }
+        .sun-orb.night {
+            background: radial-gradient(circle at 40% 40%, #94a3b8, #64748b, #475569);
+            box-shadow:
+                0 0 15px rgba(148, 163, 184, 0.3),
+                0 0 40px rgba(148, 163, 184, 0.1);
+        }
+        @keyframes sunPulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(251,191,36,0.6), 0 0 50px rgba(251,191,36,0.3), 0 0 80px rgba(251,146,60,0.15); }
+            50% { box-shadow: 0 0 30px rgba(251,191,36,0.8), 0 0 60px rgba(251,191,36,0.4), 0 0 100px rgba(251,146,60,0.2); }
+        }
+
+        /* Sun rays */
+        .sun-rays {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 60px; height: 60px;
+            transform: translate(-50%, -50%);
+            animation: raysRotate 20s linear infinite;
+        }
+        .sun-rays::before, .sun-rays::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+        }
+        .sun-rays::before {
+            width: 50px; height: 50px;
+            border: 1px solid rgba(251, 191, 36, 0.15);
+            animation: rayPulse 3s ease-in-out infinite;
+        }
+        .sun-rays::after {
+            width: 65px; height: 65px;
+            border: 1px solid rgba(251, 191, 36, 0.08);
+            animation: rayPulse 3s ease-in-out infinite 0.5s;
+        }
+        @keyframes raysRotate { to { transform: translate(-50%, -50%) rotate(360deg); } }
+        @keyframes rayPulse {
+            0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.2); }
+        }
+
+        /* Arc path */
+        .sun-path-svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Bottom info section */
+        .sun-info {
+            padding: 1.25rem 2rem 1.5rem;
+        }
+        .sun-times-row {
             display: flex;
-            justify-content: space-around;
+            justify-content: space-between;
             align-items: center;
-            gap: 2rem;
+            margin-bottom: 1rem;
         }
-        .sun-time { text-align: center; }
-        .sun-time .icon {
-            font-size: 2.2rem;
-            margin-bottom: 0.6rem;
-            display: block;
+        .sun-time-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
-        .sun-time .time {
+        .sun-time-icon {
+            width: 42px; height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 1.3rem;
+        }
+        .sun-time-icon.rise {
+            background: rgba(251, 191, 36, 0.12);
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+        .sun-time-icon.set {
+            background: rgba(249, 115, 22, 0.12);
+            border: 1px solid rgba(249, 115, 22, 0.2);
+        }
+        .sun-time-detail .time-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .sun-time-detail .time-value {
+            font-size: 1.2rem;
             font-weight: 700;
         }
-        .sun-time .label {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-top: 0.2rem;
+
+        /* Daylight progress bar */
+        .daylight-bar-container {
+            margin-top: 0.25rem;
         }
-        .sun-arc {
-            flex: 1;
-            height: 70px;
+        .daylight-bar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .daylight-bar-header span {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+        }
+        .daylight-bar-header .daylight-duration {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .daylight-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            overflow: hidden;
             position: relative;
         }
-        .sun-arc svg { width: 100%; height: 100%; }
+        .daylight-bar-fill {
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #fb923c, #fbbf24, #fb923c);
+            background-size: 200% 100%;
+            animation: shimmer 3s ease-in-out infinite;
+            transition: width 2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        .daylight-bar-fill::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: -3px;
+            width: 12px; height: 12px;
+            background: #fbbf24;
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
+        }
+        @keyframes shimmer {
+            0%, 100% { background-position: 0% 0%; }
+            50% { background-position: 100% 0%; }
+        }
 
         /* ═══════════════════════════════════════════
            FOOTER
@@ -1075,43 +1242,69 @@
                 </div>
             </div>
 
-            <!-- Sun Times -->
+            <!-- Sun Times — Redesigned -->
             <div class="sun-card glass animate-in" style="animation-delay: 0.7s">
-                <h3>☀️ Sun Schedule</h3>
-                <div class="sun-times">
-                    <div class="sun-time">
-                        <span class="icon">🌅</span>
-                        <div class="time" id="sunrise">—</div>
-                        <div class="label">Sunrise</div>
+                <div class="sun-card-header">☀️ Sun Schedule</div>
+
+                <!-- Sky Scene -->
+                <div class="sun-scene">
+                    <div class="sky"></div>
+                    <div class="horizon-glow"></div>
+                    <div class="horizon"></div>
+
+                    <!-- SVG Arc Path -->
+                    <svg class="sun-path-svg" viewBox="0 0 400 180" preserveAspectRatio="xMidYMax meet">
+                        <defs>
+                            <linearGradient id="arcGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#fb923c" stop-opacity="0.5"/>
+                                <stop offset="50%" stop-color="#fbbf24" stop-opacity="0.7"/>
+                                <stop offset="100%" stop-color="#f97316" stop-opacity="0.5"/>
+                            </linearGradient>
+                        </defs>
+                        <!-- Dashed guide arc -->
+                        <path d="M30,170 Q200,10 370,170" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1.5" stroke-dasharray="6,6"/>
+                        <!-- Filled trail arc -->
+                        <path id="sunTrail" d="M30,170 Q200,10 370,170" fill="none" stroke="url(#arcGrad2)" stroke-width="2.5"
+                              stroke-linecap="round"
+                              stroke-dasharray="540" stroke-dashoffset="540" style="transition: stroke-dashoffset 2.5s ease"/>
+                        <!-- Time markers at ends -->
+                        <circle cx="30" cy="170" r="3" fill="rgba(251,191,36,0.4)"/>
+                        <circle cx="370" cy="170" r="3" fill="rgba(249,115,22,0.4)"/>
+                    </svg>
+
+                    <!-- Sun Orb (positioned via JS) -->
+                    <div class="sun-orb-container" id="sunOrbContainer" style="left: 50%; top: 40%;">
+                        <div class="sun-rays"></div>
+                        <div class="sun-orb" id="sunOrb"></div>
                     </div>
-                    <div class="sun-arc">
-                        <svg viewBox="0 0 200 70" preserveAspectRatio="none">
-                            <defs>
-                                <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                                    <stop offset="0%" stop-color="#fb923c" stop-opacity="0.6"/>
-                                    <stop offset="50%" stop-color="#fbbf24" stop-opacity="0.8"/>
-                                    <stop offset="100%" stop-color="#f97316" stop-opacity="0.6"/>
-                                </linearGradient>
-                                <filter id="glow">
-                                    <feGaussianBlur stdDeviation="3" result="blur"/>
-                                    <feMerge>
-                                        <feMergeNode in="blur"/>
-                                        <feMergeNode in="SourceGraphic"/>
-                                    </feMerge>
-                                </filter>
-                            </defs>
-                            <path d="M10,60 Q100,0 190,60" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="2" stroke-dasharray="5,5"/>
-                            <path id="sunTrail" d="M10,60 Q100,0 190,60" fill="none" stroke="url(#arcGrad)" stroke-width="2.5"
-                                  stroke-dasharray="300" stroke-dashoffset="300" style="transition: stroke-dashoffset 2s ease"/>
-                            <circle id="sunPosition" cx="100" cy="30" r="8" fill="#fbbf24" filter="url(#glow)">
-                                <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite"/>
-                            </circle>
-                        </svg>
+                </div>
+
+                <!-- Info Section -->
+                <div class="sun-info">
+                    <div class="sun-times-row">
+                        <div class="sun-time-item">
+                            <div class="sun-time-icon rise">🌅</div>
+                            <div class="sun-time-detail">
+                                <div class="time-label">Sunrise</div>
+                                <div class="time-value" id="sunrise">—</div>
+                            </div>
+                        </div>
+                        <div class="sun-time-item">
+                            <div class="sun-time-icon set">🌇</div>
+                            <div class="sun-time-detail" style="text-align: right;">
+                                <div class="time-label">Sunset</div>
+                                <div class="time-value" id="sunset">—</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="sun-time">
-                        <span class="icon">🌇</span>
-                        <div class="time" id="sunset">—</div>
-                        <div class="label">Sunset</div>
+                    <div class="daylight-bar-container">
+                        <div class="daylight-bar-header">
+                            <span>Daylight Progress</span>
+                            <span class="daylight-duration" id="daylightDuration">— hrs</span>
+                        </div>
+                        <div class="daylight-bar">
+                            <div class="daylight-bar-fill" id="daylightFill" style="width: 0%"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1564,16 +1757,48 @@
             const total = sunset - sunrise;
             const elapsed = now - sunrise;
             let progress = Math.max(0, Math.min(1, elapsed / total));
-            const cx = 10 + progress * 180;
-            const cy = 60 - Math.sin(progress * Math.PI) * 55;
-            const sun = document.getElementById('sunPosition');
-            sun.setAttribute('cx', cx);
-            sun.setAttribute('cy', cy);
-            sun.setAttribute('fill', progress > 0 && progress < 1 ? '#fbbf24' : '#64748b');
+            const isDaytime = progress > 0 && progress < 1;
+
+            // Position the sun orb along the arc on the sky scene
+            // The scene is 100% wide and 180px tall
+            // Arc goes from ~7.5% to ~92.5% horizontally, peaking at ~5% from top
+            const scene = document.querySelector('.sun-scene');
+            if (scene) {
+                const sceneW = scene.offsetWidth;
+                const sceneH = scene.offsetHeight;
+                const leftPct = 7.5 + progress * 85; // 7.5% to 92.5%
+                const topPx = sceneH - 10 - Math.sin(progress * Math.PI) * (sceneH - 40);
+                const container = document.getElementById('sunOrbContainer');
+                container.style.left = leftPct + '%';
+                container.style.top = topPx + 'px';
+                container.style.transform = 'translate(-50%, -50%)';
+
+                // Night mode for sun
+                const orb = document.getElementById('sunOrb');
+                if (isDaytime) {
+                    orb.classList.remove('night');
+                } else {
+                    orb.classList.add('night');
+                }
+            }
+
             // Animate trail
             const trail = document.getElementById('sunTrail');
-            const trailOffset = 300 - (progress * 300);
-            trail.style.strokeDashoffset = trailOffset;
+            setTimeout(() => {
+                trail.style.strokeDashoffset = 540 - (progress * 540);
+            }, 300);
+
+            // Daylight duration
+            const durationSec = sunset - sunrise;
+            const hours = Math.floor(durationSec / 3600);
+            const minutes = Math.floor((durationSec % 3600) / 60);
+            document.getElementById('daylightDuration').textContent = `${hours}h ${minutes}m`;
+
+            // Daylight progress bar
+            const fillPct = isDaytime ? Math.round(progress * 100) : (now < sunrise ? 0 : 100);
+            setTimeout(() => {
+                document.getElementById('daylightFill').style.width = fillPct + '%';
+            }, 500);
         }
 
         function showLoading(show) {

@@ -1179,6 +1179,14 @@
         Enter your 32-character OpenWeatherMap API key to fetch live worldwide data.<br>
         <span style="color:#fbbf24; font-size:0.76rem; display:block; margin-top:0.4rem;">⏳ <strong>Important:</strong> Brand-new OpenWeatherMap keys typically take <strong>10 to 60 minutes</strong> to activate on their servers after creation.</span>
       </div>
+
+      <!-- Detailed Server Error Code & Message Box -->
+      <div id="apiErrorBox" style="display:none; margin-bottom: 0.85rem; padding: 0.65rem 0.85rem; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 10px; font-size: 0.78rem; text-align: left;">
+        <div style="font-weight: 700; color: #ef4444; margin-bottom: 0.2rem;" id="apiErrorTitle">⚠️ API Error Detected:</div>
+        <div id="apiErrorCode" style="font-family: monospace; font-weight: 700; color: #fca5a5;"></div>
+        <div id="apiErrorMessage" style="margin-top: 0.35rem; color: #cbd5e1; line-height: 1.45;"></div>
+      </div>
+
       <input type="text" id="apiInput" class="modal-input" placeholder="Paste 32-char API key here...">
       <div class="modal-btns">
         <button class="btn-primary" onclick="saveApiKey()">Save & Verify Live Key</button>
@@ -1551,13 +1559,17 @@ ${aqiStr}
         const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${API_KEY}&units=${currentUnit}`);
         
         if (!res.ok) {
+          let errData = {};
+          try { errData = await res.json(); } catch(e) {}
+          const errMsg = errData.message || res.statusText || 'Unknown error';
+
           if (res.status === 401) { 
-            showToast('⚠️ 401: Key invalid or still activating (takes 10-60 mins for new keys)');
-            showApiKeyModal();
+            showToast(`⚠️ HTTP 401: ${errMsg} (New keys take 10-60m to activate)`, 7000);
+            showApiKeyModal(res.status, errMsg);
           }
-          else if (res.status === 404) { showToast('City not found'); }
-          else if (res.status === 429) { showToast('API rate limit reached'); }
-          else { showToast('Error fetching weather'); }
+          else if (res.status === 404) { showToast(`HTTP 404: City "${city}" not found`, 5000); }
+          else if (res.status === 429) { showToast(`HTTP 429: Rate limit reached (${errMsg})`, 6000); }
+          else { showToast(`HTTP ${res.status}: ${errMsg}`, 6000); }
           showLoading(false);
           return;
         }
@@ -2208,9 +2220,24 @@ ${aqiStr}
       setTimeout(() => { circle.style.strokeDashoffset = offset; }, 100);
     }
 
-    function showApiKeyModal() {
+    function showApiKeyModal(errStatus, errMessage) {
       const input = document.getElementById('apiInput');
       if (input && API_KEY) input.value = API_KEY;
+      const errBox = document.getElementById('apiErrorBox');
+      const errCode = document.getElementById('apiErrorCode');
+      const errMsg = document.getElementById('apiErrorMessage');
+
+      if (errStatus && errBox && errCode && errMsg) {
+        errBox.style.display = 'block';
+        errCode.innerText = `HTTP ${errStatus}: ${errStatus === 401 ? 'Unauthorized (Invalid or Inactive Key)' : 'API Error'}`;
+        if (errStatus === 401) {
+          errMsg.innerHTML = `<strong>Server Response:</strong> "${errMessage || 'Invalid API key'}"<br><br>💡 <strong>What this means:</strong><br>1. <strong>Activation Delay:</strong> Newly registered OpenWeatherMap keys typically take <strong>10 to 60 minutes</strong> (sometimes up to 2 hours) to activate across edge servers.<br>2. <strong>Email Confirmation:</strong> Check your inbox and click the confirmation link in the OpenWeatherMap verification email.<br>3. <strong>Key Verification:</strong> Make sure there are no typos or accidental spaces.`;
+        } else {
+          errMsg.innerHTML = `<strong>Server Response:</strong> "${errMessage || 'Request failed'}"`;
+        }
+      } else if (errBox) {
+        errBox.style.display = 'none';
+      }
       document.getElementById('api-modal').classList.add('active');
     }
     function saveApiKey() {
@@ -2228,7 +2255,7 @@ ${aqiStr}
       demoMode = false;
       document.getElementById('api-modal').classList.remove('active');
       updateKeyStatusUI();
-      showToast("Verifying API key with live weather...");
+      showToast("Verifying API key with live weather...", 4000);
       searchWeather(lastCity || 'Tokyo');
     }
     function useDemoMode() {
@@ -2242,11 +2269,13 @@ ${aqiStr}
       document.getElementById('loading').classList.toggle('active', show);
     }
 
-    function showToast(msg) {
+    let toastTimer = null;
+    function showToast(msg, duration = 3500) {
       const toast = document.getElementById('toast');
       toast.innerText = msg;
       toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 3200);
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), duration);
     }
   </script>
 </body>

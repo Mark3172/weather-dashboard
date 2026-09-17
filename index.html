@@ -476,10 +476,21 @@
     }
     .d-sub { font-size: 0.7rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    .progress-ring { width: 32px; height: 32px; position: absolute; right: 0.55rem; top: 0.7rem; transform: rotate(-90deg); }
-    .progress-ring circle { fill: none; stroke-width: 3.5; stroke-linecap: round; }
-    .progress-ring .bg { stroke: rgba(255,255,255,0.1); }
-    .progress-ring .fg { stroke: var(--card-accent, #60a5fa); stroke-dasharray: 88; stroke-dashoffset: 88; transition: stroke-dashoffset 1s ease-out; }
+    .d-meter {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 0.35rem;
+    }
+    .d-meter-fill {
+      height: 100%;
+      background: var(--card-accent, #60a5fa);
+      border-radius: 3px;
+      transition: width 1s ease-out;
+      box-shadow: 0 0 6px var(--card-accent);
+    }
 
     .compass { width: 32px; height: 32px; position: absolute; right: 0.55rem; top: 0.7rem; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
     .compass-needle { width: 3px; height: 13px; background: #ef4444; border-radius: 2px; position: absolute; top: 3px; transform-origin: bottom center; transition: transform 1s cubic-bezier(0.34, 1.56, 0.64, 1); }
@@ -993,10 +1004,9 @@
               <div class="d-header">💧 Humidity</div>
               <div class="d-value" id="valHumidity">62%</div>
               <div class="d-sub" id="subHumidity">Comfortable</div>
-              <svg class="progress-ring">
-                <circle class="bg" cx="16" cy="16" r="14"></circle>
-                <circle class="fg" id="ringHumidity" cx="16" cy="16" r="14"></circle>
-              </svg>
+              <div class="d-meter">
+                <div class="d-meter-fill" id="meterHumidity" style="width: 62%;"></div>
+              </div>
             </div>
 
             <div class="detail-card glass" style="--card-accent: #ef4444;">
@@ -1028,10 +1038,9 @@
               <div class="d-header">☁️ Clouds</div>
               <div class="d-value" id="valClouds">40%</div>
               <div class="d-sub" id="subClouds">Scattered</div>
-              <svg class="progress-ring">
-                <circle class="bg" cx="16" cy="16" r="14"></circle>
-                <circle class="fg" id="ringClouds" cx="16" cy="16" r="14"></circle>
-              </svg>
+              <div class="d-meter">
+                <div class="d-meter-fill" id="meterClouds" style="width: 40%; background: #f472b6; box-shadow: 0 0 6px #f472b6;"></div>
+              </div>
             </div>
           </div>
 
@@ -1626,7 +1635,8 @@ ${aqiStr}
       // Detail Metrics
       animateValue(document.getElementById('valHumidity'), data.main.humidity, '%');
       document.getElementById('subHumidity').innerText = humidityLevel(data.main.humidity);
-      animateCircle('ringHumidity', data.main.humidity);
+      const meterH = document.getElementById('meterHumidity');
+      if (meterH) meterH.style.width = Math.min(100, Math.max(0, data.main.humidity)) + '%';
 
       const wSpeed = data.wind.speed;
       animateValue(document.getElementById('valWind'), wSpeed);
@@ -1644,7 +1654,8 @@ ${aqiStr}
       const clouds = data.clouds ? data.clouds.all : 0;
       animateValue(document.getElementById('valClouds'), clouds, '%');
       document.getElementById('subClouds').innerText = cloudLevel(clouds);
-      animateCircle('ringClouds', clouds);
+      const meterC = document.getElementById('meterClouds');
+      if (meterC) meterC.style.width = Math.min(100, Math.max(0, clouds)) + '%';
 
       // Air Quality Index (AQI)
       fetchAirQuality(data.coord.lat, data.coord.lon, data.aqi).then(aqi => {

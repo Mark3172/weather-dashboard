@@ -1176,11 +1176,12 @@
     <div class="modal-content">
       <div class="modal-title">OpenWeatherMap API Key</div>
       <div class="modal-desc">
-        Enter your free OpenWeatherMap API key to fetch live worldwide data, or continue in interactive demo mode.
+        Enter your 32-character OpenWeatherMap API key to fetch live worldwide data.<br>
+        <span style="color:#fbbf24; font-size:0.76rem; display:block; margin-top:0.4rem;">⏳ <strong>Important:</strong> Brand-new OpenWeatherMap keys typically take <strong>10 to 60 minutes</strong> to activate on their servers after creation.</span>
       </div>
-      <input type="text" id="apiInput" class="modal-input" placeholder="Paste your API key here...">
+      <input type="text" id="apiInput" class="modal-input" placeholder="Paste 32-char API key here...">
       <div class="modal-btns">
-        <button class="btn-primary" onclick="saveApiKey()">Save & Use Live Data</button>
+        <button class="btn-primary" onclick="saveApiKey()">Save & Verify Live Key</button>
         <button class="btn-secondary" onclick="useDemoMode()">Continue in Demo Mode</button>
       </div>
     </div>
@@ -1550,7 +1551,10 @@ ${aqiStr}
         const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${API_KEY}&units=${currentUnit}`);
         
         if (!res.ok) {
-          if (res.status === 401) { showToast('Invalid API Key'); showApiKeyModal(); }
+          if (res.status === 401) { 
+            showToast('⚠️ 401: Key invalid or still activating (takes 10-60 mins for new keys)');
+            showApiKeyModal();
+          }
           else if (res.status === 404) { showToast('City not found'); }
           else if (res.status === 429) { showToast('API rate limit reached'); }
           else { showToast('Error fetching weather'); }
@@ -2205,18 +2209,27 @@ ${aqiStr}
     }
 
     function showApiKeyModal() {
+      const input = document.getElementById('apiInput');
+      if (input && API_KEY) input.value = API_KEY;
       document.getElementById('api-modal').classList.add('active');
     }
     function saveApiKey() {
-      const val = document.getElementById('apiInput').value.trim();
-      if (val) {
-        API_KEY = val;
-        localStorage.setItem('weather_api_key', API_KEY);
-        demoMode = false;
-        document.getElementById('api-modal').classList.remove('active');
-        updateKeyStatusUI();
-        searchWeather(lastCity || 'Tokyo');
+      let val = document.getElementById('apiInput').value.trim();
+      val = val.replace(/['"`]/g, '').trim();
+      if (!val) {
+        showToast("Please enter your API key");
+        return;
       }
+      if (val.length !== 32) {
+        showToast(`Note: OpenWeatherMap keys are usually 32 characters (yours has ${val.length})`);
+      }
+      API_KEY = val;
+      localStorage.setItem('weather_api_key', API_KEY);
+      demoMode = false;
+      document.getElementById('api-modal').classList.remove('active');
+      updateKeyStatusUI();
+      showToast("Verifying API key with live weather...");
+      searchWeather(lastCity || 'Tokyo');
     }
     function useDemoMode() {
       demoMode = true;
